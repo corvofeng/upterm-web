@@ -59,3 +59,28 @@ func Test_getHostForCookie(t *testing.T) {
 		assertEqual(t, getHostForCookie(test.domain), test.host)
 	}
 }
+
+func Test_getCookieKeyFromDomain(t *testing.T) {
+	TEST_CASE := []struct {
+		domain string
+		port   string
+		key    string
+	}{
+		{
+			domain: "9923-954f8ae5c789df92af151052200bf971.uptermd-local.corvo.fun:8001",
+			port:   "9923",
+			key:    "954f8ae5c789df92af151052200bf971",
+		},
+		{
+			domain: "3333-954f8ae5c789df92af151052200bf971.uptermd-local.corvo.fun:8001",
+			port:   "3333",
+			key:    "954f8ae5c789df92af151052200bf971",
+		},
+	}
+	for _, test := range TEST_CASE {
+		port, key := getCookieKeyFromDomain((test.domain))
+		assertEqual(t, port, test.port)
+		assertEqual(t, key, test.key)
+	}
+
+}

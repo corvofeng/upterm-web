@@ -64,22 +64,29 @@ func getHostForCookie(domain string) string {
 	return domain
 }
 
+func getCookieKeyFromDomain(domain string) (string, string) {
+	data := strings.Split(domain, ".")
+	return strings.Split(data[0], "-")[0], strings.Split(data[0], "-")[1]
+}
+
 func (cfg *SSHConnConfig) createCookie(w http.ResponseWriter, cookieDomain, realDomain string) {
 	cfg_byte, _ := json.Marshal(cfg)
+	_, key := getCookieKeyFromDomain(realDomain)
 	cookie := http.Cookie{
-		Name:     MD5(realDomain),
+		Name:     key,
 		Value:    base64.StdEncoding.EncodeToString(cfg_byte),
 		Domain:   getHostForCookie(cookieDomain),
 		Path:     "/",
 		MaxAge:   10 * 24 * 3600,
 		SameSite: http.SameSiteLaxMode,
 	}
-	sLog.Debug("Create cookie for %s %+v", realDomain, cookie)
+	sLog.Debugf("Create cookie for %s %+v", realDomain, cookie)
 	http.SetCookie(w, &cookie)
 }
 
 func createSSHConfig(req *http.Request) (*SSHConnConfig, error) {
-	data, err := req.Cookie(MD5(req.Host))
+	port, key := getCookieKeyFromDomain(req.Host)
+	data, err := req.Cookie(key)
 	sLog.Debug("Want get cookie ", MD5(req.Host))
 	if err != nil {
 		return nil, err
@@ -91,6 +98,10 @@ func createSSHConfig(req *http.Request) (*SSHConnConfig, error) {
 	}
 	if err := json.Unmarshal(val, &cfg); err != nil {
 		return nil, err
+	}
+	if cfg.WebPort != port {
+		sLog.Infof("Use forward port %s for %+v", port, string(val))
+		cfg.WebPort = port
 	}
 	return &cfg, nil
 }
@@ -119,16 +130,23 @@ func (cfg *SSHConnConfig) checkSSHCoon() (net.Conn, error) {
 }
 
 func (us *UptermWebServer) Auth(w http.ResponseWriter, req *http.Request) {
-	hostname, port, err := parsedAdvisedUri(req.URL.Query().Get("advisedUri"))
+	sDe, err := base64.StdEncoding.DecodeString(req.URL.Query().Get("payload"))
 	if err != nil {
-		w.Write([]byte(fmt.Sprintf("Could not parse %s", err)))
+		w.Write([]byte(fmt.Sprintf("Could not parse payload: %s", err)))
 		return
 	}
+	rawURL := string(sDe)
+	u, err := url.Parse(rawURL)
+	if err != nil {
+		w.Write([]byte(fmt.Sprintf("Could not parse url %s with %s", rawURL, err)))
+		return
+	}
+
 	cfg := SSHConnConfig{
-		Username: req.URL.Query().Get("username"),
-		Hostname: hostname,
-		Port:     port,
-		WebPort:  req.URL.Query().Get("webPort"),
+		Username: u.User.Username(),
+		Hostname: u.Hostname(),
+		Port:     u.Port(),
+		WebPort:  u.Query().Get("webPort"),
 	}
 	conn, err := cfg.checkSSHCoon()
 	if err != nil {
@@ -140,7 +158,7 @@ func (us *UptermWebServer) Auth(w http.ResponseWriter, req *http.Request) {
 
 	domain := fmt.Sprintf("%s-%s.%s", cfg.WebPort, MD5(cfg.Username), us.SubDomain)
 	cfg.createCookie(w, us.SubDomain, domain)
-	http.Redirect(w, req, fmt.Sprintf("%s://%s/.upterm/loading", us.SubDomainProto, domain), http.StatusTemporaryRedirect)
+	http.Redirect(w, req, fmt.Sprintf("%s://%s/.upterm/loading.html", us.SubDomainProto, domain), http.StatusTemporaryRedirect)
 }
 
 func (us *UptermWebServer) VSCodeConn(w http.ResponseWriter, req *http.Request) {

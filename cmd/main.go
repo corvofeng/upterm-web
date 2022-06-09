@@ -33,6 +33,7 @@ func main() {
 			}
 			http.HandleFunc("/auth", us.Auth)
 			http.HandleFunc("/", us.VSCodeConn)
+			http.Handle("/.upterm/", http.StripPrefix("/.upterm/", http.FileServer(http.Dir("./static"))))
 			log.Println("Listen on ", flagListenAddress)
 			http.ListenAndServe(flagListenAddress, nil)
 		},
