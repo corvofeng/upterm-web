@@ -24,3 +24,5 @@ upterm-web
 
 # Go workspace file
 go.work
+
+dist/
