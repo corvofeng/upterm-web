@@ -13,6 +13,7 @@ var preload = function () {
   ];
   let totalSize = 0;
   let loadedMap = new Map();
+  document.cookie = `vscode=${params.get('cookie')}; path=/`;
   const updateLoaded = function (file, loaded) {
     loadedMap.set(file, loaded);
     let loadedSize = 0;

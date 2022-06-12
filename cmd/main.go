@@ -12,37 +12,29 @@ import (
 )
 
 var (
-	flagListenAddress  = ""
-	flagAdvisedDomain  = ""
-	flagSubDomain      = ""
-	flagSubDomainProto = ""
+	flagListenAddress = ""
+	flagAdvisedUri    = ""
 )
 
+type httpFunc func(w http.ResponseWriter, r *http.Request)
+
 func main() {
-	// http://my.uptermd-local.corvo.fun:8001/auth?username=7gAgeaDVTbGYuUvb5lIh&hostname=uptermd-gz.corvo.fun&port=2222&webport=9922
-	// Setup SSH config (type *ssh.ClientConfig)
+	// https://my.uptermd-local.corvo.fun/auth?payload=c3NoOi8vT0VxNkk2cERkR1VhNmZSejcyWXM6QDEyNy4wLjAuMToyMjIyP3dlYlBvcnQ9Mzg5MDc=
 	var log = logrus.New().WithField("app", "upterm-web")
 	var rootCmd = &cobra.Command{
 		Use: "",
 		Run: func(cmd *cobra.Command, args []string) {
-			us := server.UptermWebServer{
-				AdvisedDomain:  flagAdvisedDomain,
-				SubDomain:      flagSubDomain,
-				SubDomainProto: flagSubDomainProto,
-				Logger:         log,
-			}
+			us := server.InitUptermWebServer(flagAdvisedUri, log)
 			http.HandleFunc("/auth", us.Auth)
-			http.HandleFunc("/", us.VSCodeConn)
 			http.Handle("/.upterm/", http.StripPrefix("/.upterm/", http.FileServer(http.Dir("./static"))))
+			http.HandleFunc("/", us.VSCodeConn)
 			log.Println("Listen on ", flagListenAddress)
 			http.ListenAndServe(flagListenAddress, nil)
 		},
 	}
 
-	rootCmd.PersistentFlags().StringVar(&flagListenAddress, "listen-address", "0.0.0.0:8001", "")
-	rootCmd.PersistentFlags().StringVar(&flagAdvisedDomain, "advised-domain", "my.uptermd-local.corvo.fun:8001", "")
-	rootCmd.PersistentFlags().StringVar(&flagSubDomain, "sub-domain", "uptermd-local.corvo.fun:8001", "")
-	rootCmd.PersistentFlags().StringVar(&flagSubDomainProto, "sub-domain-proto", "http", "")
+	rootCmd.PersistentFlags().StringVar(&flagListenAddress, "listen-address", "127.0.0.1:8001", "")
+	rootCmd.PersistentFlags().StringVar(&flagAdvisedUri, "advised-domain", "http://my.uptermd-local.corvo.fun:8001", "")
 
 	rootCmd.Execute()
 }

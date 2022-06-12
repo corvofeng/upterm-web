@@ -76,6 +76,11 @@ func Test_getCookieKeyFromDomain(t *testing.T) {
 			port:   "3333",
 			key:    "954f8ae5c789df92af151052200bf971",
 		},
+		{
+			domain: "954f8ae5c789df92af151052200bf971.uptermd-local.corvo.fun:8001",
+			port:   "0",
+			key:    "954f8ae5c789df92af151052200bf971",
+		},
 	}
 	for _, test := range TEST_CASE {
 		port, key := getCookieKeyFromDomain((test.domain))
