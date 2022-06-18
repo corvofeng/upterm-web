@@ -14,7 +14,13 @@ async function loadProductInfo() {
 
 // copy from vscode: src/vs/platform/remote/common/remoteHosts.ts
 function getRemoteServerRootPath(product) {
-	return `/${product.quality ?? 'oss'}-${product.commit ?? 'dev'}`;
+  return `/${product.quality ?? 'oss'}-${product.commit ?? 'dev'}/static`;
+}
+
+// vscode-cdn has a cors limit, I want to create an package in cdnjs:
+//  https://github.com/cdnjs/packages
+function generateCDNPath(product) {
+  return `https://main.vscode-cdn.net/${product.quality ?? 'oss'}/${product.commit ?? 'dev'}`;
 }
 
 var preload = async function () {
@@ -26,18 +32,23 @@ var preload = async function () {
 
   const productInfo = await loadProductInfo();
   const serverRootPath = getRemoteServerRootPath(productInfo);
-  console.log(serverRootPath);
+  // const serverRootPath = generateCDNPath(productInfo);
 
   // The static file paths:
   // used in: src/vs/code/browser/workbench/workbench.html
   // generated in: src/vs/server/node/webClientServer.ts
   const largeFiles = [
     // file to download, estimated size in bytes
-    [`${serverRootPath}/static/out/vs/workbench/workbench.web.main.js`, 11 * 1024 * 1024],
-    [`${serverRootPath}/static/out/vs/workbench/api/worker/extensionHostWorker.js`, 1 * 1024 * 1024],
-    [`${serverRootPath}/static/out/vs/workbench/workbench.web.main.nls.js`, 500 * 1024],
-    [`${serverRootPath}/static/node_modules/vscode-oniguruma/release/onig.wasm`, 500 * 1024],
-    [`${serverRootPath}/static/out/vs/base/worker/workerMain.js`, 300 * 1024],
+    [`${serverRootPath}/out/vs/workbench/workbench.web.main.js`, 11 * 1024 * 1024],
+    [`${serverRootPath}/out/vs/workbench/api/worker/extensionHostWorker.js`, 1 * 1024 * 1024],
+    [`${serverRootPath}/out/vs/workbench/workbench.web.main.nls.js`, 500 * 1024],
+    [`${serverRootPath}/node_modules/vscode-oniguruma/release/onig.wasm`, 500 * 1024],
+    [`${serverRootPath}/out/vs/base/worker/workerMain.js`, 300 * 1024],
+    [`${serverRootPath}/out/vs/workbench/workbench.web.main.css`, 450 * 1024],
+    [`${serverRootPath}/out/vs/loader.js`, 40 * 1024],
+    [`${serverRootPath}/out/vs/webPackagePaths.js`, 1024],
+    [`${serverRootPath}/out/vs/webPackagePaths.js`, 1024],
+    [`${serverRootPath}/out/vs/code/browser/workbench/workbench.js`, 9 * 1024],
   ];
 
   let totalSize = 0;
