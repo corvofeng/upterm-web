@@ -2,16 +2,35 @@
 <html>
 
 <head>
-    <meta charset="utf-8">
-    <title>UptermWeb</title>
-    <link rel="stylesheet" href="css/loading.css">
+  <meta charset="utf-8">
+  <title>UptermWeb</title>
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="UptermVSCode">
+  <link rel="apple-touch-icon"
+    href="/stable-30d9c6cd9483b2cc586687151bcbcd635f373630/static/resources/server/code-192.png" />
+
+  <link rel="manifest" href="/.upterm/manifest.json">
+
+  <!-- place this in a head section -->
+  <link href="/apple_splash_2048.png" sizes="2048x2732" rel="apple-touch-startup-image" />
+  <link href="/apple_splash_1668.png" sizes="1668x2224" rel="apple-touch-startup-image" />
+  <link href="/apple_splash_1536.png" sizes="1536x2048" rel="apple-touch-startup-image" />
+  <link href="/apple_splash_1125.png" sizes="1125x2436" rel="apple-touch-startup-image" />
+  <link href="/apple_splash_1242.png" sizes="1242x2208" rel="apple-touch-startup-image" />
+  <link href="/apple_splash_750.png" sizes="750x1334" rel="apple-touch-startup-image" />
+  <link href="/apple_splash_640.png" sizes="640x1136" rel="apple-touch-startup-image" />
+
+  <link rel="stylesheet" href="/.upterm/css/loading.css">
 
 </head>
+
 <body>
-    <div class='loader-container'>
-        <div class='rocket-container'>
-            <div class='structure'>
-                <svg height='352' id='rocket-svg' version='1.1' viewbox='0 0 59.266662 93.133333' width='224' xmlns='http://www.w3.org/2000/svg'>
+  <div class='loader-container'>
+    <div class='rocket-container'>
+      <div class='structure'>
+        <svg height='352' id='rocket-svg' version='1.1' viewbox='0 0 59.266662 93.133333' width='224'
+          xmlns='http://www.w3.org/2000/svg'>
           <g id='layer2' transform='translate(-33.866666,-33.866666)'>
             <path
               d='m 296,336 a 8.0000078,8.0000078 0 0 0 -8,8 v 80 a 8.0000078,7.9999501 0 0 0 1.16406,4.14062 l -0.22461,0.11329 49.32227,49.32031 0.0781,0.0801 0.004,-0.004 A 7.9999934,8.0000655 0 0 0 344,480 a 7.9999934,8.0000655 0 0 0 8,-8 v -80 a 7.9999934,7.9998924 0 0 0 -2.34961,-5.65625 l 0.004,-0.004 -48.00391,-48.00195 -0.004,0.002 A 8.0000078,8.0000078 0 0 0 296,336 Z'
@@ -51,33 +70,37 @@
               transform='scale(0.26458333)'></path>
           </g>
         </svg>
-            </div>
-            <div class='text-container'>
-                <h2 id="loading">Loading: 00%</h2>
-            </div>
-            <div class='smoke'>
-                <span></span>
-                <span></span>
-                <span></span>
-                <span></span>
-                <span></span>
-                <span></span>
-                <span></span>
-                <span></span>
-                <span></span>
-                <span></span>
-            </div>
-        </div>
-        <div class='meteors-container'>
-            <span></span>
-            <span></span>
-            <span></span>
-            <span></span>
-            <span></span>
-            <span></span>
-        </div>
+      </div>
+      <div class='text-container'>
+        <h2 id="loading">Loading: 00%</h2>
+        <button id="btn-continue" class="button-ctn" role="button" style="display: none;">
+          We recommend adding this page to the home screen, but you can click here to continue loading in your browser.
+        </button>
+      </div>
+      <div class='smoke'>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
     </div>
+    <div class='meteors-container'>
+      <span></span>
+      <span></span>
+      <span></span>
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+  </div>
 
-    <script src="js/loading.js"></script>
+  <script src="/.upterm/js/loading.js"></script>
 </body>
+
 </html>

@@ -102,16 +102,25 @@ func (cfg *SSHConnConfig) encode() string {
 
 func createSSHConfigFromCookie(req *http.Request) (*SSHConnConfig, error) {
 	// cookie set by frontend js
-	data, err := req.Cookie("vscode")
-	if err != nil {
-		return nil, err
-	}
 	var cfg SSHConnConfig
-	val, err := base64.StdEncoding.DecodeString(data.Value)
-	if err != nil {
-		return nil, err
+	var rawString []byte
+	var err error
+	if data, err := req.Cookie("vscode"); err == nil {
+		rawString, err = base64.StdEncoding.DecodeString(data.Value)
+		if err != nil {
+			return nil, err
+		}
 	}
-	if err := json.Unmarshal(val, &cfg); err != nil {
+	if len(rawString) == 0 {
+		// ios home app try to find cfg in the get params
+		data := req.URL.Query().Get("vscode")
+		if rawString, err = base64.StdEncoding.DecodeString(data); err != nil {
+			fmt.Println(rawString, err)
+			return nil, err
+		}
+	}
+
+	if err := json.Unmarshal(rawString, &cfg); err != nil {
 		return nil, err
 	}
 	return &cfg, nil
@@ -170,14 +179,18 @@ func (us *UptermWebServer) Auth(w http.ResponseWriter, req *http.Request) {
 
 	domain := fmt.Sprintf("%s.%s", MD5(cfg.Username), us.subDomain)
 	us.ttlMap.Put(MD5(cfg.Username), cfg)
-	// cfg.createCookie(w, us.subDomain, domain)
-	http.Redirect(w, req, fmt.Sprintf("%s://%s/.upterm/loading.html?cookie=%s", us.subDomainProto, domain, cfg.encode()), http.StatusTemporaryRedirect)
+	http.Redirect(w, req, fmt.Sprintf("%s://%s?upterm=true&page=loading&vscode=%s", us.subDomainProto, domain, cfg.encode()), http.StatusTemporaryRedirect)
 }
 
 func (us *UptermWebServer) VSCodeConn(w http.ResponseWriter, req *http.Request) {
 	var cfg *SSHConnConfig
 	var err error
 	us.Logger.Info("Request: ", req.Host, req.URL.Path)
+	if req.URL.Query().Get("upterm") == "true" {
+		p := "./static/index.html"
+		http.ServeFile(w, req, p)
+		return
+	}
 
 	cfg, _ = createSSHConfigFromCookie(req)
 	port, cacheKey := getCookieKeyFromDomain(req.Host)
