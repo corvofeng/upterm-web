@@ -1,23 +1,47 @@
 'use strict'
 
-var preload = function () {
+
+async function loadProductInfo() {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open('GET', '/static/product.json', true);
+    xhr.onload = () => {
+      resolve(JSON.parse(xhr.response));
+    };
+    xhr.send();
+  })
+}
+
+// copy from vscode: src/vs/platform/remote/common/remoteHosts.ts
+function getRemoteServerRootPath(product) {
+	return `/${product.quality ?? 'oss'}-${product.commit ?? 'dev'}`;
+}
+
+var preload = async function () {
   const ele = document.getElementById('loading');
   const btnContinue = document.getElementById('btn-continue');
   const params = new URLSearchParams(window.location.search);
   const vscodeCookie = params.get('vscode');
+  document.cookie = `vscode=${vscodeCookie}; path=/`; // write cookie
 
+  const productInfo = await loadProductInfo();
+  const serverRootPath = getRemoteServerRootPath(productInfo);
+  console.log(serverRootPath);
+
+  // The static file paths:
+  // used in: src/vs/code/browser/workbench/workbench.html
+  // generated in: src/vs/server/node/webClientServer.ts
   const largeFiles = [
     // file to download, estimated size in bytes
-    ['/static/out/vs/workbench/workbench.web.main.js', 11 * 1024 * 1024],
-    ['/static/out/vs/workbench/api/worker/extensionHostWorker.js', 1 * 1024 * 1024],
-    ['/static/out/vs/workbench/workbench.web.main.nls.js', 500 * 1024],
-    ['/static/node_modules/vscode-oniguruma/release/onig.wasm', 500 * 1024],
-    ['/static/out/vs/base/worker/workerMain.js', 300 * 1024],
+    [`${serverRootPath}/static/out/vs/workbench/workbench.web.main.js`, 11 * 1024 * 1024],
+    [`${serverRootPath}/static/out/vs/workbench/api/worker/extensionHostWorker.js`, 1 * 1024 * 1024],
+    [`${serverRootPath}/static/out/vs/workbench/workbench.web.main.nls.js`, 500 * 1024],
+    [`${serverRootPath}/static/node_modules/vscode-oniguruma/release/onig.wasm`, 500 * 1024],
+    [`${serverRootPath}/static/out/vs/base/worker/workerMain.js`, 300 * 1024],
   ];
 
   let totalSize = 0;
   let loadedMap = new Map();
-  document.cookie = `vscode=${vscodeCookie}; path=/`;
   const updateLoaded = function (file, loaded) {
     loadedMap.set(file, loaded);
     let loadedSize = 0;
